@@ -41,13 +41,15 @@
             {
                 // Wenn der Konstruktor Parameter hat, rekursiv deren Abhängigkeiten auflösen
                 var parameterImplementations = new List<object>();
+
                 foreach (var parameter in parameters)
                 {
                     var parameterInstance = Resolve(parameter.ParameterType);
+
                     parameterImplementations.Add(parameterInstance);
                 }
 
-                return constructorInfo.Invoke(parameterImplementations.ToArray());
+                return constructorInfo.Invoke([.. parameterImplementations]);
             }
         }
     }

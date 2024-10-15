@@ -5,6 +5,7 @@
         static void Main(string[] args)
         {
             Console.WriteLine("Demo - Simple DI Container!");
+            Console.WriteLine();
 
             var serviceContainer = new Logic.ServiceContainer();
 
