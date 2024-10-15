@@ -12,12 +12,12 @@
 
             INotificationManager notificationManager = serviceContainer.Resolve<INotificationManager>();
 
-            notificationManager.SendNotification("Hello, World!");
+            notificationManager.SendNotification("Notification to the beautiful World!");
         }
 
         static void RegisterServices(Logic.ServiceContainer serviceContainer)
         {
-            serviceContainer.Register<IMessageService, EmailMessageService>();
+            serviceContainer.Register<IMessageService, ConsoleMessageService>();
             serviceContainer.Register<INotificationManager, NotificationManager>();
         }
     }
