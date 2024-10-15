@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDIContainer.Logic", "SimpleDIContainer.Logic\SimpleDIContainer.Logic.csproj", "{D8B72068-A03F-4121-9417-2B98FD22040B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDIContainer.ConApp", "SimpleDIContainer.ConApp\SimpleDIContainer.ConApp.csproj", "{9F98D125-C149-4225-9250-5D44B569C42B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D8B72068-A03F-4121-9417-2B98FD22040B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8B72068-A03F-4121-9417-2B98FD22040B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8B72068-A03F-4121-9417-2B98FD22040B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8B72068-A03F-4121-9417-2B98FD22040B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F98D125-C149-4225-9250-5D44B569C42B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F98D125-C149-4225-9250-5D44B569C42B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F98D125-C149-4225-9250-5D44B569C42B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F98D125-C149-4225-9250-5D44B569C42B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6D4D524B-98EF-44C5-A4EA-B5472B2AB80A}
+	EndGlobalSection
+EndGlobal
