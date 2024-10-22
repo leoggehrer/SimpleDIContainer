@@ -9,8 +9,14 @@ namespace SimpleDIContainer.Logic
     /// </remarks>
     public class ServiceContainer
     {
+        private class ImplementationInfo
+        {
+            public required bool IsSingleton { get; set;}
+            public object? Instance { get; set;}
+        }
         // Dictionary zum Speichern von Typzuweisungen (z.B. Interface -> Implementierung)
-        private Dictionary<Type, Type> _typeMappings = new Dictionary<Type, Type>();
+        private Dictionary<Type, Type> _typeMappings = new();
+        private Dictionary<Type, ImplementationInfo> _implementationInfos = new();
 
         // Registrierung: Ein Interface wird einer konkreten Implementierung zugewiesen
         /// <summary>
@@ -23,7 +29,25 @@ namespace SimpleDIContainer.Logic
         /// </remarks>
         public void Register<TInterface, TImplementation>()
         {
-            _typeMappings[typeof(TInterface)] = typeof(TImplementation);
+            Register<TInterface, TImplementation>(false);
+        }
+
+        /// <summary>
+        /// Registers a mapping between a specified interface and its implementation.
+        /// </summary>
+        /// <typeparam name="TInterface">The type of the interface to be registered.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation that will be associated with the interface.</typeparam>
+        /// <param name="isSingleton">Indicates if the implementation type is a singleton.</param>
+        public void Register<TInterface, TImplementation>(bool isSingleton)
+        {
+             var implementationType = typeof(TImplementation);
+
+            _typeMappings[typeof(TInterface)] = implementationType;
+            _implementationInfos[implementationType] = new ImplementationInfo
+            {
+                IsSingleton = isSingleton,
+                Instance = null,
+            };
         }
 
         // Auflösung: Der Container erstellt eine Instanz der gewünschten Klasse
@@ -48,6 +72,8 @@ namespace SimpleDIContainer.Logic
         /// <exception cref="InvalidOperationException">Thrown when an instance of the implementation type cannot be created.</exception>
         private object Resolve(Type type)
         {
+            object result;
+
             // Wenn der Typ nicht registriert wurde, werfen wir eine Exception
             if (!_typeMappings.ContainsKey(type))
             {
@@ -56,30 +82,44 @@ namespace SimpleDIContainer.Logic
 
             // Die konkrete Implementierung für das registrierte Interface
             Type implementationType = _typeMappings[type];
+            ImplementationInfo implementationInfo = _implementationInfos[implementationType];
 
-            // Den Standard-Konstruktor verwenden, um eine Instanz der Implementierung zu erzeugen
-            var constructorInfo = implementationType.GetConstructors()[0];
-            var parameters = constructorInfo.GetParameters();
-
-            if (parameters.Length == 0)
+            if (implementationInfo.IsSingleton == false 
+                || implementationInfo.Instance == null)
             {
-                // Wenn der Konstruktor keine Parameter hat, einfach die Instanz erstellen
-                return Activator.CreateInstance(implementationType) ?? throw new InvalidOperationException($"Could not create an instance of {implementationType.FullName}");
-            }
-            else
-            {
-                // Wenn der Konstruktor Parameter hat, rekursiv deren Abhängigkeiten auflösen
-                var parameterImplementations = new List<object>();
+                // Den Standard-Konstruktor verwenden, um eine Instanz der Implementierung zu erzeugen
+                var constructorInfo = implementationType.GetConstructors()[0];
+                var parameters = constructorInfo.GetParameters();
 
-                foreach (var parameter in parameters)
+                if (parameters.Length == 0)
                 {
-                    var parameterInstance = Resolve(parameter.ParameterType);
-
-                    parameterImplementations.Add(parameterInstance);
+                    // Wenn der Konstruktor keine Parameter hat, einfach die Instanz erstellen
+                    result = Activator.CreateInstance(implementationType) ?? throw new InvalidOperationException($"Could not create an instance of {implementationType.FullName}");
                 }
+                else
+                {
+                    // Wenn der Konstruktor Parameter hat, rekursiv deren Abhängigkeiten auflösen
+                    var parameterImplementations = new List<object>();
 
-                return constructorInfo.Invoke([.. parameterImplementations]);
+                    foreach (var parameter in parameters)
+                    {
+                        var parameterInstance = Resolve(parameter.ParameterType);
+
+                        parameterImplementations.Add(parameterInstance);
+                    }
+                    result = constructorInfo.Invoke([.. parameterImplementations]);
+                }
+                if (implementationInfo.IsSingleton)
+                {
+                    implementationInfo.Instance = result;
+                }
             }
+            else    // implementationInfo.IsSingleton 
+                    // && implementationInfo.Instance != null
+            {
+                result = implementationInfo.Instance;
+            }
+            return result;
         }
     }
 }
