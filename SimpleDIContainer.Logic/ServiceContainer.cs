@@ -1,3 +1,5 @@
+using Castle.DynamicProxy;
+
 namespace SimpleDIContainer.Logic
 {
     /// <summary>
@@ -9,16 +11,22 @@ namespace SimpleDIContainer.Logic
     /// </remarks>
     public class ServiceContainer
     {
+        #region embedded types
         private class ImplementationInfo
         {
-            public required bool IsSingleton { get; set;}
+            public required Type Type { get; set; }
+            public required bool IsSingleton { get; set; }
             public object? Instance { get; set;}
         }
-        // Dictionary zum Speichern von Typzuweisungen (z.B. Interface -> Implementierung)
-        private Dictionary<Type, Type> _typeMappings = new();
-        private Dictionary<Type, ImplementationInfo> _implementationInfos = new();
+        #endregion embedded types
 
-        // Registrierung: Ein Interface wird einer konkreten Implementierung zugewiesen
+        #region fields
+        private readonly ProxyGenerator _proxyGenerator = new();
+        // Dictionary for storing type mappings (e.g. Interface -> Implementation)
+        private readonly Dictionary<Type, ImplementationInfo> _typeMappings = [];
+        #endregion fields
+
+        #region register methods
         /// <summary>
         /// Registers a mapping between a specified interface and its implementation.
         /// </summary>
@@ -40,17 +48,19 @@ namespace SimpleDIContainer.Logic
         /// <param name="isSingleton">Indicates if the implementation type is a singleton.</param>
         public void Register<TInterface, TImplementation>(bool isSingleton)
         {
-             var implementationType = typeof(TImplementation);
+            Type interfaceType = typeof(TInterface);
+            Type implementationType = typeof(TImplementation);
 
-            _typeMappings[typeof(TInterface)] = implementationType;
-            _implementationInfos[implementationType] = new ImplementationInfo
+            _typeMappings[interfaceType] = new ImplementationInfo
             {
+                Type = implementationType,
                 IsSingleton = isSingleton,
                 Instance = null,
             };
         }
+        #endregion register methods
 
-        // Auflösung: Der Container erstellt eine Instanz der gewünschten Klasse
+        #region resolve methods
         /// <summary>
         /// Resolves an instance of the specified interface type.
         /// </summary>
@@ -60,6 +70,14 @@ namespace SimpleDIContainer.Logic
         public TInterface Resolve<TInterface>()
         {
             return (TInterface)Resolve(typeof(TInterface));
+        }
+
+        public TInterface ResolveProxy<TInterface>(IInterceptor interceptor)
+        {
+            var implementationObject = Resolve(typeof(TInterface));
+            var proxyObject = _proxyGenerator.CreateInterfaceProxyWithTarget(typeof(TInterface), implementationObject, interceptor);
+
+            return (TInterface)proxyObject;
         }
 
         /// <summary>
@@ -75,14 +93,14 @@ namespace SimpleDIContainer.Logic
             object result;
 
             // Wenn der Typ nicht registriert wurde, werfen wir eine Exception
-            if (!_typeMappings.ContainsKey(type))
+            if (!_typeMappings.TryGetValue(type, out ImplementationInfo? value))
             {
                 throw new Exception($"Type {type.Name} not registered in the container");
             }
 
             // Die konkrete Implementierung für das registrierte Interface
-            Type implementationType = _typeMappings[type];
-            ImplementationInfo implementationInfo = _implementationInfos[implementationType];
+            ImplementationInfo implementationInfo = value;
+            Type implementationType = implementationInfo.Type;
 
             if (implementationInfo.IsSingleton == false 
                 || implementationInfo.Instance == null)
@@ -121,5 +139,6 @@ namespace SimpleDIContainer.Logic
             }
             return result;
         }
+        #endregion resolve methods
     }
 }

@@ -27,8 +27,9 @@ namespace SimpleDIContainer.ConApp
             INotificationManager notificationManager = serviceContainer.Resolve<INotificationManager>();
 
             notificationManager.SendNotification("Notification to the beautiful World im Ersten!");
+            Console.WriteLine();
 
-            notificationManager = serviceContainer.Resolve<INotificationManager>();
+            notificationManager = serviceContainer.ResolveProxy<INotificationManager>(new Interceptor());
 
             notificationManager.SendNotification("Notification to the beautiful World im Zweiten!");
         }
