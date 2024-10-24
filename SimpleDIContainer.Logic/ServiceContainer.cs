@@ -14,8 +14,19 @@ namespace SimpleDIContainer.Logic
         #region embedded types
         private class ImplementationInfo
         {
+            /// <summary>
+            /// Gets or sets the type of the implementation.
+            /// </summary>
             public required Type Type { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the implementation is a singleton.
+            /// </summary>
             public required bool IsSingleton { get; set; }
+
+            /// <summary>
+            /// Gets or sets the instance of the implementation.
+            /// </summary>
             public object? Instance { get; set;}
         }
         #endregion embedded types
@@ -72,6 +83,12 @@ namespace SimpleDIContainer.Logic
             return (TInterface)Resolve(typeof(TInterface));
         }
 
+        /// <summary>
+        /// Resolves a proxy instance of the specified interface type with the given interceptor.
+        /// </summary>
+        /// <typeparam name="TInterface">The type of the interface to resolve.</typeparam>
+        /// <param name="interceptor">The interceptor to apply to the proxy.</param>
+        /// <returns>A proxy instance of the specified interface type.</returns>
         public TInterface ResolveProxy<TInterface>(IInterceptor interceptor)
         {
             var implementationObject = Resolve(typeof(TInterface));
