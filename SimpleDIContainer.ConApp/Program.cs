@@ -29,7 +29,7 @@ namespace SimpleDIContainer.ConApp
             notificationManager.SendNotification("Notification to the beautiful World im Ersten!");
             Console.WriteLine();
 
-            notificationManager = serviceContainer.ResolveProxy<INotificationManager>(new Interceptor());
+            notificationManager = serviceContainer.Resolve<INotificationManager>();
 
             notificationManager.SendNotification("Notification to the beautiful World im Zweiten!");
         }
@@ -45,7 +45,7 @@ namespace SimpleDIContainer.ConApp
         static void RegisterServices(Logic.ServiceContainer serviceContainer)
         {
             serviceContainer.Register<IMessageService, ConsoleMessageService>(true);
-            serviceContainer.Register<INotificationManager, NotificationManager>();
+            serviceContainer.Register<INotificationManager, NotificationManager>(new Interceptor());
         }
     }
 }

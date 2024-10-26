@@ -25,6 +25,11 @@ namespace SimpleDIContainer.Logic
             public required bool IsSingleton { get; set; }
 
             /// <summary>
+            /// Gets or sets the interceptor to be applied to the implementation.
+            /// </summary>
+            public IInterceptor? Interceptor { get; set; }
+
+            /// <summary>
             /// Gets or sets the instance of the implementation.
             /// </summary>
             public object? Instance { get; set;}
@@ -48,7 +53,7 @@ namespace SimpleDIContainer.Logic
         /// </remarks>
         public void Register<TInterface, TImplementation>()
         {
-            Register<TInterface, TImplementation>(false);
+            Register<TInterface, TImplementation>(false, null);
         }
 
         /// <summary>
@@ -59,6 +64,29 @@ namespace SimpleDIContainer.Logic
         /// <param name="isSingleton">Indicates if the implementation type is a singleton.</param>
         public void Register<TInterface, TImplementation>(bool isSingleton)
         {
+            Register<TInterface, TImplementation>(isSingleton, null);
+        }
+
+        /// <summary>
+        /// Registers a mapping between a specified interface and its implementation with an interceptor.
+        /// </summary>
+        /// <typeparam name="TInterface">The type of the interface to be registered.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation that will be associated with the interface.</typeparam>
+        /// <param name="interceptor">The interceptor to apply to the implementation.</param>
+        public void Register<TInterface, TImplementation>(IInterceptor? interceptor)
+        {
+            Register<TInterface, TImplementation>(false, interceptor);
+        }
+
+        /// <summary>
+        /// Registers a mapping between a specified interface and its implementation with an interceptor and singleton option.
+        /// </summary>
+        /// <typeparam name="TInterface">The type of the interface to be registered.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation that will be associated with the interface.</typeparam>
+        /// <param name="isSingleton">Indicates if the implementation type is a singleton.</param>
+        /// <param name="interceptor">The interceptor to apply to the implementation.</param>
+        public void Register<TInterface, TImplementation>(bool isSingleton, IInterceptor? interceptor)
+        {
             Type interfaceType = typeof(TInterface);
             Type implementationType = typeof(TImplementation);
 
@@ -66,6 +94,7 @@ namespace SimpleDIContainer.Logic
             {
                 Type = implementationType,
                 IsSingleton = isSingleton,
+                Interceptor = interceptor,
                 Instance = null,
             };
         }
@@ -81,20 +110,6 @@ namespace SimpleDIContainer.Logic
         public TInterface Resolve<TInterface>()
         {
             return (TInterface)Resolve(typeof(TInterface));
-        }
-
-        /// <summary>
-        /// Resolves a proxy instance of the specified interface type with the given interceptor.
-        /// </summary>
-        /// <typeparam name="TInterface">The type of the interface to resolve.</typeparam>
-        /// <param name="interceptor">The interceptor to apply to the proxy.</param>
-        /// <returns>A proxy instance of the specified interface type.</returns>
-        public TInterface ResolveProxy<TInterface>(IInterceptor interceptor)
-        {
-            var implementationObject = Resolve(typeof(TInterface));
-            var proxyObject = _proxyGenerator.CreateInterfaceProxyWithTarget(typeof(TInterface), implementationObject, interceptor);
-
-            return (TInterface)proxyObject;
         }
 
         /// <summary>
@@ -154,7 +169,8 @@ namespace SimpleDIContainer.Logic
             {
                 result = implementationInfo.Instance;
             }
-            return result;
+
+            return implementationInfo.Interceptor != default ? _proxyGenerator.CreateInterfaceProxyWithTarget(type, result, implementationInfo.Interceptor) : result;
         }
         #endregion resolve methods
     }
